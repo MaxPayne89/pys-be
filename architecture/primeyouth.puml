@@ -1,0 +1,59 @@
+@startuml
+title Primeyouthsports Backend Bird's-eye view
+!include <cloudinsight/kafka>
+!include <elastic/elasticsearch/elasticsearch>
+!include <elastic/logstash/logstash>
+!include <elastic/kibana/kibana>
+!include <cloudinsight/postgresql>
+!include <cloudinsight/user>
+
+cloud {
+    queue kafka
+}
+
+cloud {
+package "Services" {
+  [Analytics Service]
+  [Certificate Service]
+  [Performance Service]
+    }
+}
+
+cloud {
+database AnalyticsDB {
+    rectangle postgres1
+    [Analytics Tables]
+    }
+}
+
+cloud {
+database PerformanceDB {
+    rectangle postgres2
+    [Performance Tables]
+    }
+}
+
+cloud {
+database CertificateDB {
+    rectangle postgres3
+    [Certificate Tables]
+    }
+}
+
+
+queue "<$kafka>" as kafka
+rectangle "<$postgresql>" as postgres1
+rectangle "<$postgresql>" as postgres2
+rectangle "<$postgresql>" as postgres3
+
+
+[Analytics Service] <----> [Analytics Tables] : read/write
+[Performance Service] <----> [Performance Tables] : read/write
+[Certificate Service] <----> [Certificate Tables] : read/write
+[Performance Service] --> kafka : publishes
+[Performance Service] --> kafka : consumes
+[Analytics Service] --> kafka : publishes
+[Analytics Service] <-- kafka : consumes
+[Certificate Service] <-- kafka : consumes
+
+@enduml
